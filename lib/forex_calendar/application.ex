@@ -7,13 +7,13 @@ defmodule ForexCalendar.Application do
 
   @impl true
   def start(_type, _args) do
-    Dotenv.load!
+    Application.put_env(:elixir, :ansi_enabled, true)
 
     bot_opts = %{
       name: "ForexCalendar",
       consumer: Bot.Consumer,
       intents: :all,
-      wrapped_token: fn -> System.fetch_env!("DISCORD_TOKEN") end
+      wrapped_token: fn -> Application.get_env(:forex_calendar, :discord_token) end
     }
 
     children = [
@@ -28,7 +28,7 @@ defmodule ForexCalendar.Application do
       # Start to serve requests, typically the last entry
       ForexCalendarWeb.Endpoint,
       {Nosedrum.Storage.Dispatcher, name: Nosedrum.Storage.Dispatcher},
-      {Nostrum.Bot, bot_opts},
+      {Nostrum.Bot, bot_opts}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

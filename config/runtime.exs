@@ -20,6 +20,12 @@ if System.get_env("PHX_SERVER") do
   config :forex_calendar, ForexCalendarWeb.Endpoint, server: true
 end
 
+Dotenv.load!()
+
+config :forex_calendar,
+  discord_token: System.fetch_env!("DISCORD_TOKEN"),
+  guild_id: System.fetch_env!("GUILD_ID")
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||

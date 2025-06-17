@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: forex_calendar_dev
+    volumes:
+      - forex_calendar_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - forex_calendar-networks
+volumes:
+  forex_calendar_data:
+  
+networks:
+  forex_calendar-networks:
+    driver: bridge

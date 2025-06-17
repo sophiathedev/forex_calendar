@@ -66,7 +66,12 @@ config :forex_calendar, ForexCalendarWeb.Endpoint,
 config :forex_calendar, dev_routes: true
 
 # Do not include metadata nor timestamps in development logs
-config :logger, :console, format: "[$date] [$level] $message\n"
+config :logger, :console, format: "[$date $time] [$level] $message\n"
+
+config :logger, :console,
+  metadata: [:shard, :guild, :channel],
+  colors: [enabled: true],
+  format: "[$date $time] [$level] [$metadata] $message\n"
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.
