@@ -11,14 +11,28 @@ defmodule Bot.Command.Ping do
   def type, do: :slash
 
   @impl true
-  def command(_interaction) do
-    latency = Nostrum.Util.get_all_shard_latencies() |> Map.values
-    latency = Enum.sum(latency) / length(latency)
-    [content: ":ping_pong: Pong! Latency: #{round(latency)}ms"]
+  def command(interaction) do
+    [embeds: [embed_info(interaction)]]
   end
 
   defp embed_info(interaction) do
     avatar_url = User.avatar_url(interaction.user, "png")
-    embed = %Nostrum.Struct.Embed{} |> put_author("#{interaction.member.nick}", avatar_url, avatar_url) |> put_thumbnail(avatar_url)
+
+    embed =
+      %Nostrum.Struct.Embed{}
+      |> put_title("Pong!")
+      |> put_author(User.full_name(interaction.user), avatar_url, avatar_url)
+      |> put_color(0x4285F4)
+      |> put_footer("Powered by Elixir Nostrum")
+      |> put_field("Elixir version", "`#{Application.spec(:elixir, :vsn)}`", true)
+      |> put_field("Version", "`#{Application.spec(:forex_calendar, :vsn)}`", true)
+      |> put_field("Ping", "`#{round(get_average_latency())}ms`", false)
+
+    embed
+  end
+
+  defp get_average_latency do
+    latencies = Nostrum.Util.get_all_shard_latencies() |> Map.values()
+    Enum.sum(latencies) / length(latencies)
   end
 end
