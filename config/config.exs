@@ -61,6 +61,36 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :crawly,
+  concurrent_requests_per_domain: 1,
+  closespider_timeout: 10,
+  request_timeout: 30_000,
+  middlewares: [
+    Crawly.Middlewares.DomainFilter,
+    Crawly.Middlewares.UniqueRequest,
+    {Crawly.Middlewares.UserAgent,
+     user_agents: [
+       "Crawly Bot"
+     ]},
+    {Crawly.Middlewares.RequestOptions,
+     [
+       timeout: 30_000,
+       recv_timeout: 30_000,
+       follow_redirect: true,
+       max_redirect: 5,
+       hackney: [
+         connect_timeout: 10_000,
+         recv_timeout: 30_000,
+         follow_redirect: true,
+         max_redirect: 5,
+         pool: :default
+       ]
+     ]}
+  ],
+  pipelines: [
+    {Crawly.Pipelines.WriteToFile, folder: "/tmp", extension: "jl"}
+  ]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
