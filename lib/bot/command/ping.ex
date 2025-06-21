@@ -12,7 +12,7 @@ defmodule Bot.Command.Ping do
 
   @impl true
   def command(interaction) do
-    [embeds: [embed_info(interaction)]]
+    [embeds: [embed_info(interaction)], ephemeral?: true]
   end
 
   defp embed_info(interaction) do

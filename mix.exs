@@ -64,8 +64,8 @@ defmodule ForexCalendar.MixProject do
       {:dotenv, github: "avdi/dotenv_elixir", depth: 1},
       {:ex_json_schema, "~> 0.11.1", override: true},
       {:crawly, "~> 0.17.2"},
-      {:cachex, github: "whitfin/cachex", depth: 1}
-
+      {:cachex, github: "whitfin/cachex", depth: 1},
+      {:tzdata, "~> 1.1"}
     ]
   end
 

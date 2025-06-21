@@ -1,8 +1,44 @@
 defmodule Bot.Spider.ForexFactory do
-  @base_url "https://www.forexfactory.com/calendar?day=today"
+  import ForexCalendar.Utils, only: [today_id: 0]
+  @today_url "https://www.forexfactory.com/calendar?day=today"
+  # @today_url "https://www.forexfactory.com/calendar?day=jun20.2025"
 
-  def fetch_data do
-    @base_url |> Crawly.fetch()
+  def fetch_today do
+    @today_url |> Crawly.fetch()
+  end
+
+  def parse_today_event do
+    {:ok, exists_today_event_body} = Cachex.exists?(:cache, "event#{today_id()}")
+
+    {:ok, body} =
+      if exists_today_event_body do
+        Cachex.get(:cache, "event#{today_id()}")
+      else
+        %HTTPoison.Response{body: crawled_body} = fetch_today()
+
+        {:ok, crawled_body}
+      end
+
+    if not exists_today_event_body do
+      {:ok, true} = Cachex.put(:cache, "event#{today_id()}", body, expire: 24 * 60 * 60 * 1000)
+    end
+
+    parse_item(body)
+    |> fill_missing_times()
+    |> Enum.map(fn crawled_event ->
+      struct(Bot.Event, crawled_event)
+    end)
+  end
+
+  defp fill_missing_times(events) do
+    {filled_events, _} =
+      Enum.map_reduce(events, nil, fn event, last_time ->
+        current_time = if event.time == nil or event.time == "", do: last_time, else: event.time
+        updated_event = %{event | time: current_time}
+        {updated_event, current_time}
+      end)
+
+    filled_events
   end
 
   def parse_item(body) do
@@ -24,10 +60,8 @@ defmodule Bot.Spider.ForexFactory do
   defp parse_row(row) do
     tds = row |> Floki.find("td")
 
-    if length(tds) < 8 do
-      nil
-    else
-      %{
+    if length(tds) >= 8 do
+      event_response = %{
         time: extract_time(tds),
         currency: extract_currency(tds),
         impact: extract_impact(tds),
@@ -37,6 +71,8 @@ defmodule Bot.Spider.ForexFactory do
         previous: extract_previous(tds),
         event_id: extract_event_id(row)
       }
+
+      event_response |> Map.put(:event_url, @today_url <> "#detail=#{event_response.event_id}")
     end
   end
 
@@ -45,23 +81,7 @@ defmodule Bot.Spider.ForexFactory do
   end
 
   defp extract_currency(tds) do
-    tds
-    |> Enum.find(fn td ->
-      case Floki.attribute(td, "class") do
-        [class] -> String.contains?(class, "calendar__currency")
-        _ -> false
-      end
-    end)
-    |> case do
-      nil ->
-        nil
-
-      td ->
-        td
-        |> Floki.find("span")
-        |> Floki.text()
-        |> String.trim()
-    end
+    tds |> Floki.find("td.calendar__currency") |> Floki.text() |> String.trim()
   end
 
   defp extract_impact(tds) do
@@ -89,10 +109,10 @@ defmodule Bot.Spider.ForexFactory do
             case Floki.attribute(icon_elem, "class") do
               [class] ->
                 cond do
-                  String.contains?(class, "ff-impact-red") -> "high"
-                  String.contains?(class, "ff-impact-ora") -> "medium"
-                  String.contains?(class, "ff-impact-yel") -> "low"
-                  String.contains?(class, "ff-impact-gra") -> "holiday"
+                  String.contains?(class, "ff-impact-red") -> "High"
+                  String.contains?(class, "ff-impact-ora") -> "Medium"
+                  String.contains?(class, "ff-impact-yel") -> "Low"
+                  String.contains?(class, "ff-impact-gra") -> "Non-Economic"
                   true -> "unknown"
                 end
 
@@ -125,73 +145,34 @@ defmodule Bot.Spider.ForexFactory do
 
   defp extract_actual(tds) do
     tds
-    |> Enum.find(fn td ->
-      case Floki.attribute(td, "class") do
-        [class] -> String.contains?(class, "calendar__actual")
-        _ -> false
-      end
-    end)
+    |> Floki.find("td.calendar__actual")
+    |> Floki.text()
+    |> String.trim()
     |> case do
-      nil ->
-        nil
-
-      td ->
-        td
-        |> Floki.find("span")
-        |> Floki.text()
-        |> String.trim()
-        |> case do
-          "" -> nil
-          value -> value
-        end
+      "" -> nil
+      value -> value
     end
   end
 
   defp extract_forecast(tds) do
     tds
-    |> Enum.find(fn td ->
-      case Floki.attribute(td, "class") do
-        [class] -> String.contains?(class, "calendar__forecast")
-        _ -> false
-      end
-    end)
+    |> Floki.find("td.calendar__forecast")
+    |> Floki.text()
+    |> String.trim()
     |> case do
-      nil ->
-        nil
-
-      td ->
-        td
-        |> Floki.find("span")
-        |> Floki.text()
-        |> String.trim()
-        |> case do
-          "" -> nil
-          value -> value
-        end
+      "" -> nil
+      value -> value
     end
   end
 
   defp extract_previous(tds) do
     tds
-    |> Enum.find(fn td ->
-      case Floki.attribute(td, "class") do
-        [class] -> String.contains?(class, "calendar__previous")
-        _ -> false
-      end
-    end)
+    |> Floki.find("td.calendar__previous")
+    |> Floki.text()
+    |> String.trim()
     |> case do
-      nil ->
-        nil
-
-      td ->
-        td
-        |> Floki.find("span")
-        |> Floki.text()
-        |> String.trim()
-        |> case do
-          "" -> nil
-          value -> value
-        end
+      "" -> nil
+      value -> value
     end
   end
 
