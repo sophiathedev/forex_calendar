@@ -63,7 +63,9 @@ defmodule ForexCalendar.MixProject do
       {:nostrum, github: "Kraigie/nostrum", depth: 1, override: true},
       {:dotenv, github: "avdi/dotenv_elixir", depth: 1},
       {:ex_json_schema, "~> 0.11.1", override: true},
-      {:crawly, "~> 0.17.2"}
+      {:crawly, "~> 0.17.2"},
+      {:cachex, github: "whitfin/cachex", depth: 1}
+
     ]
   end
 

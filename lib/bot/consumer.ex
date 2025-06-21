@@ -6,7 +6,8 @@ defmodule Bot.Consumer do
     guild_id = Application.get_env(:forex_calendar, :guild_id)
 
     slash_command = [
-      Nosedrum.Storage.Dispatcher.add_command("ping", Bot.Command.Ping, guild_id)
+      Nosedrum.Storage.Dispatcher.add_command("ping", Bot.Command.Ping, guild_id),
+      Nosedrum.Storage.Dispatcher.add_command("today", Bot.Command.Today, guild_id)
     ]
 
     slash_command

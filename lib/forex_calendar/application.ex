@@ -27,6 +27,7 @@ defmodule ForexCalendar.Application do
       # {ForexCalendar.Worker, arg},
       # Start to serve requests, typically the last entry
       ForexCalendarWeb.Endpoint,
+      {Cachex, :cache},
       {Nosedrum.Storage.Dispatcher, name: Nosedrum.Storage.Dispatcher},
       {Nostrum.Bot, bot_opts}
     ]
