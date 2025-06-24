@@ -148,10 +148,6 @@ defmodule Bot.Spider.ForexFactory do
     |> Floki.find("td.calendar__actual")
     |> Floki.text()
     |> String.trim()
-    |> case do
-      "" -> nil
-      value -> value
-    end
   end
 
   defp extract_forecast(tds) do
@@ -159,10 +155,6 @@ defmodule Bot.Spider.ForexFactory do
     |> Floki.find("td.calendar__forecast")
     |> Floki.text()
     |> String.trim()
-    |> case do
-      "" -> nil
-      value -> value
-    end
   end
 
   defp extract_previous(tds) do
@@ -170,10 +162,6 @@ defmodule Bot.Spider.ForexFactory do
     |> Floki.find("td.calendar__previous")
     |> Floki.text()
     |> String.trim()
-    |> case do
-      "" -> nil
-      value -> value
-    end
   end
 
   defp extract_event_id(row) do

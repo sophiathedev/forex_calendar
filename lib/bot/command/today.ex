@@ -13,9 +13,9 @@ defmodule Bot.Command.Today do
 
   @impl true
   def command(_interaction) do
-    today_events = parse_today_event()
-    dbg(today_events)
-    [embeds: [create_embed(today_events)]]
+    today_events = parse_today_event() |> Enum.chunk_every(20) |> Enum.map(&create_embed/1)
+
+    [embeds: today_events]
   end
 
   defp create_embed(events) do
