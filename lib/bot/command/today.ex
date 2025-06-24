@@ -13,9 +13,18 @@ defmodule Bot.Command.Today do
 
   @impl true
   def command(_interaction) do
-    today_events = parse_today_event() |> Enum.chunk_every(20) |> Enum.map(&create_embed/1)
+    today_events = parse_today_event() |> filter_important_events() |> Enum.chunk_every(15) |> Enum.map(&create_embed/1)
 
     [embeds: today_events]
+  end
+
+  defp filter_important_events(events) do
+    important_currencies = ["USD", "EUR", "GBP", "JPY"]
+    important_impact = ["High", "Non-Economic"]
+
+    Enum.filter(events, fn event ->
+      event.currency in important_currencies && event.impact in important_impact
+    end)
   end
 
   defp create_embed(events) do
