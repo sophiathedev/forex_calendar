@@ -1,167 +1,158 @@
 defmodule ForexCalendarWeb.UserSettingsLive do
   use ForexCalendarWeb, :live_view
 
-  alias ForexCalendar.Accounts
+  alias ForexCalendar.Servers
+  alias ForexCalendar.Servers.Server
 
   def render(assigns) do
     ~H"""
-    <.header class="text-center">
-      Account Settings
-      <:subtitle>Manage your account email address and password settings</:subtitle>
-    </.header>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-end mb-6">
+        <.button phx-click={show_modal("add-server-modal")} class="flex items-center gap-2 !text-sm">
+          <.icon name="hero-plus" class="h-4 w-4" /> Add Server
+        </.button>
+      </div>
 
-    <div class="space-y-12 divide-y">
-      <div>
-        <.simple_form
-          for={@email_form}
-          id="email_form"
-          phx-submit="update_email"
-          phx-change="validate_email"
-        >
-          <.input field={@email_form[:email]} type="email" label="Email" required />
-          <.input
-            field={@email_form[:current_password]}
-            name="current_password"
-            id="current_password_for_email"
-            type="password"
-            label="Current password"
-            value={@email_form_current_password}
-            required
-          />
-          <:actions>
-            <.button phx-disable-with="Changing...">Change Email</.button>
-          </:actions>
-        </.simple_form>
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Your Discord Servers</h2>
+
+        <div :if={Enum.empty?(@servers)} class="text-center py-12">
+          <div class="text-gray-500">
+            <.icon name="hero-computer-desktop" class="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <p class="text-lg font-medium">No servers added yet</p>
+            <p class="text-sm mt-1">Add your first Discord server to get started</p>
+          </div>
+        </div>
+
+        <div :if={!Enum.empty?(@servers)} class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div :for={server <- @servers} class="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow duration-200">
+            <% server_guild = get_discord_guild(server) %>
+            <% dbg(server_guild) %>
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center space-x-3">
+                <h3 class="text-lg font-semibold text-gray-900">{server_guild.name}</h3>
+              </div>
+
+              <div class="flex space-x-2">
+                <.button
+                  class="!p-2 !rounded-full !bg-red-500 hover:!bg-red-600 !flex !items-center !justify-center"
+                  phx-click="delete_server"
+                  phx-value-id={server.id}
+                  data-confirm="Are you sure you want to remove this server?"
+                >
+                  <.icon name="hero-trash" class="h-4 w-4" />
+                </.button>
+              </div>
+            </div>
+
+            <div class="space-y-2 text-sm text-gray-600">
+              <div class="flex justify-between">
+                <span>Added:</span>
+                <% inserted_time = DateTime.shift_zone!(server.inserted_at, "Asia/Ho_Chi_Minh") %>
+                <span>{Calendar.strftime(inserted_time, "%Y-%m-%d %H:%M")}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Guild ID:</span>
+                <code>{server.guild_id}</code>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div>
-        <.simple_form
-          for={@password_form}
-          id="password_form"
-          action={~p"/users/log_in?_action=password_updated"}
-          method="post"
-          phx-change="validate_password"
-          phx-submit="update_password"
-          phx-trigger-action={@trigger_submit}
-        >
-          <input
-            name={@password_form[:email].name}
-            type="hidden"
-            id="hidden_user_email"
-            value={@current_email}
-          />
-          <.input field={@password_form[:password]} type="password" label="New password" required />
-          <.input
-            field={@password_form[:password_confirmation]}
-            type="password"
-            label="Confirm new password"
-          />
-          <.input
-            field={@password_form[:current_password]}
-            name="current_password"
-            type="password"
-            label="Current password"
-            id="current_password_for_password"
-            value={@current_password}
-            required
-          />
-          <:actions>
-            <.button phx-disable-with="Changing...">Change Password</.button>
-          </:actions>
-        </.simple_form>
-      </div>
-    </div>
+
+      <.modal id="add-server-modal" on_cancel={hide_modal("add-server-modal")} show={@show_add_server_modal}>
+        <div class="space-y-6">
+          <div>
+            <h2 class="text-lg font-semibold text-gray-900">Add New Server</h2>
+            <p class="mt-1 text-sm text-gray-600">
+              Enter the Guild ID of the Discord server you want to add.
+            </p>
+          </div>
+
+          <.simple_form for={@server_form} phx-submit="create_server">
+            <.input field={@server_form[:guild_id]} type="number" label="Guild ID" required />
+
+            <div class="flex justify-end space-x-1">
+              <.button
+                type="button"
+                phx-click={hide_modal("add-server-modal")}
+                class="!bg-red-500 hover:!bg-red-600"
+              >
+                Cancel
+              </.button>
+              <.button type="submit" class="!px-3 !w-24">
+                Add
+              </.button>
+            </div>
+          </.simple_form>
+        </div>
+      </.modal> </div>
     """
-  end
-
-  def mount(%{"token" => token}, _session, socket) do
-    socket =
-      case Accounts.update_user_email(socket.assigns.current_user, token) do
-        :ok ->
-          put_flash(socket, :info, "Email changed successfully.")
-
-        :error ->
-          put_flash(socket, :error, "Email change link is invalid or it has expired.")
-      end
-
-    {:ok, push_navigate(socket, to: ~p"/users/settings")}
   end
 
   def mount(_params, _session, socket) do
     user = socket.assigns.current_user
-    email_changeset = Accounts.change_user_email(user)
-    password_changeset = Accounts.change_user_password(user)
+    servers = if user, do: Servers.list_servers(user.id), else: []
+    server_changeset = Server.changeset(%Server{}, %{})
 
-    socket =
-      socket
-      |> assign(:current_password, nil)
-      |> assign(:email_form_current_password, nil)
-      |> assign(:current_email, user.email)
-      |> assign(:email_form, to_form(email_changeset))
-      |> assign(:password_form, to_form(password_changeset))
-      |> assign(:trigger_submit, false)
-
-    {:ok, socket}
+    {:ok,
+     socket
+     |> assign(:show_add_server_modal, false)
+     |> assign(:server_form, to_form(server_changeset))
+     |> assign(:servers, servers)}
   end
 
-  def handle_event("validate_email", params, socket) do
-    %{"current_password" => password, "user" => user_params} = params
+  defp get_discord_guild(server) do
+    {:ok, exist_cached_guild} = Cachex.exists?(:cache, "guild#{server.guild_id}")
 
-    email_form =
-      socket.assigns.current_user
-      |> Accounts.change_user_email(user_params)
-      |> Map.put(:action, :validate)
-      |> to_form()
+    if not exist_cached_guild do
+      %Server{guild_id: guild_id} = server
 
-    {:noreply, assign(socket, email_form: email_form, email_form_current_password: password)}
-  end
+      {:ok, guild} = Nostrum.Api.Guild.get(String.to_integer(guild_id))
+      {:ok, true} = Cachex.put(:cache, "guild#{server.guild_id}", guild, expire: :timer.hours(1))
 
-  def handle_event("update_email", params, socket) do
-    %{"current_password" => password, "user" => user_params} = params
-    user = socket.assigns.current_user
-
-    case Accounts.apply_user_email(user, password, user_params) do
-      {:ok, _applied_user} ->
-        # Accounts.deliver_user_update_email_instructions(
-        #   applied_user,
-        #   user.email,
-        #   &url(~p"/users/settings/confirm_email/#{&1}")
-        # )
-
-        info = "A link to confirm your email change has been sent to the new address."
-        {:noreply, socket |> put_flash(:info, info) |> assign(email_form_current_password: nil)}
-
-      {:error, changeset} ->
-        {:noreply, assign(socket, :email_form, to_form(Map.put(changeset, :action, :insert)))}
+      guild
+    else
+      {:ok, guild} = Cachex.get(:cache, "guild#{server.guild_id}")
+      guild
     end
   end
 
-  def handle_event("validate_password", params, socket) do
-    %{"current_password" => password, "user" => user_params} = params
-
-    password_form =
-      socket.assigns.current_user
-      |> Accounts.change_user_password(user_params)
-      |> Map.put(:action, :validate)
-      |> to_form()
-
-    {:noreply, assign(socket, password_form: password_form, current_password: password)}
-  end
-
-  def handle_event("update_password", params, socket) do
-    %{"current_password" => password, "user" => user_params} = params
+  def handle_event("create_server", %{"server" => server_params}, socket) do
     user = socket.assigns.current_user
 
-    case Accounts.update_user_password(user, password, user_params) do
-      {:ok, user} ->
-        password_form =
-          user
-          |> Accounts.change_user_password(user_params)
-          |> to_form()
+    server_params = Map.put(server_params, "user_id", user.id)
+    hide("add-server-modal")
 
-        {:noreply, assign(socket, trigger_submit: true, password_form: password_form)}
+    case Servers.create_server(server_params) do
+      {:ok, _server} ->
+        servers = Servers.list_servers(user.id)
+        {:noreply,
+         socket
+         |> assign(:servers, servers)
+         |> assign(:show_add_server_modal, false)
+         |> put_flash(:info, "Server added successfully!")
+         |> push_navigate(to: ~p"/users/settings")}
 
       {:error, changeset} ->
-        {:noreply, assign(socket, password_form: to_form(changeset))}
+        {:noreply, assign(socket, :server_form, to_form(changeset))}
+    end
+  end
+
+  def handle_event("delete_server", %{"id" => server_id}, socket) do
+    user = socket.assigns.current_user
+    server = Servers.get_server!(server_id)
+
+    case Servers.delete_server(server) do
+      {:ok, _server} ->
+        servers = Servers.list_servers(user.id)
+        {:noreply,
+         socket
+         |> assign(:servers, servers)
+         |> put_flash(:info, "Server removed successfully!")}
+
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, "Failed to remove server")}
     end
   end
 end

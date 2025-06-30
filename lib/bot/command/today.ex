@@ -13,7 +13,11 @@ defmodule Bot.Command.Today do
 
   @impl true
   def command(_interaction) do
-    today_events = parse_today_event() |> filter_important_events() |> Enum.chunk_every(15) |> Enum.map(&create_embed/1)
+    today_events =
+      parse_today_event()
+      |> filter_important_events()
+      |> Enum.chunk_every(15)
+      |> Enum.map(&create_embed/1)
 
     [embeds: today_events]
   end

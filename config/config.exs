@@ -9,7 +9,7 @@ import Config
 
 config :forex_calendar,
   ecto_repos: [ForexCalendar.Repo],
-  generators: [timestamp_type: :naive_datetime, binary_id: true]
+  generators: [timestamp_type: :utc_datetime, binary_id: true]
 
 # Configures the endpoint
 config :forex_calendar, ForexCalendarWeb.Endpoint,

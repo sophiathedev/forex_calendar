@@ -70,7 +70,10 @@ defmodule Mix.Tasks.CreateAdmin do
         Mix.shell().info("✅ Admin user created successfully!")
         Mix.shell().info("📧 Email: #{confirmed_user.email}")
         Mix.shell().info("👑 Role: #{confirmed_user.role}")
-        Mix.shell().info("✅ Account confirmed: #{if confirmed_user.confirmed_at, do: "Yes", else: "No"}")
+
+        Mix.shell().info(
+          "✅ Account confirmed: #{if confirmed_user.confirmed_at, do: "Yes", else: "No"}"
+        )
 
       {:error, changeset} ->
         Mix.shell().error("❌ Failed to create admin user:")
@@ -84,8 +87,7 @@ defmodule Mix.Tasks.CreateAdmin do
   end
 
   defp confirm_user(user) do
-    now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
-
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
     user
     |> Ecto.Changeset.change(confirmed_at: now)
     |> Repo.update!()

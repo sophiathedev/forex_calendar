@@ -1,6 +1,9 @@
 defmodule ForexCalendar.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
+
+  alias ForexCalendar.Servers.Server
+
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "users" do
@@ -8,8 +11,10 @@ defmodule ForexCalendar.Accounts.User do
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :current_password, :string, virtual: true, redact: true
-    field :confirmed_at, :naive_datetime
+    field :confirmed_at, :utc_datetime
     field :role, :string, default: "normal"
+
+    has_many :servers, Server
 
     timestamps()
   end
@@ -66,7 +71,9 @@ defmodule ForexCalendar.Accounts.User do
 
   defp validate_role(changeset) do
     changeset
-    |> validate_inclusion(:role, ["normal", "admin"], message: "must be either 'normal' or 'admin'")
+    |> validate_inclusion(:role, ["normal", "admin"],
+      message: "must be either 'normal' or 'admin'"
+    )
   end
 
   defp maybe_hash_password(changeset, opts) do

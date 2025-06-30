@@ -8,10 +8,10 @@ defmodule ForexCalendar.Repo.Migrations.CreateUsersAuthTables do
       add :id, :binary_id, primary_key: true
       add :email, :citext, null: false
       add :hashed_password, :string, null: false
-      add :confirmed_at, :naive_datetime
+      add :confirmed_at, :utc_datetime
       add :role, :string, null: false, default: "normal"
 
-      timestamps()
+      timestamps(type: :utc_datetime)
     end
 
     create unique_index(:users, [:email])
@@ -24,7 +24,7 @@ defmodule ForexCalendar.Repo.Migrations.CreateUsersAuthTables do
       add :context, :string, null: false
       add :sent_to, :string
 
-      timestamps(updated_at: false)
+      timestamps(type: :utc_datetime, updated_at: false)
     end
 
     create index(:users_tokens, [:user_id])
