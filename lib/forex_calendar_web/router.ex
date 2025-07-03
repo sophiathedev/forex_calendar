@@ -64,6 +64,7 @@ defmodule ForexCalendarWeb.Router do
     live_session :require_authenticated_user,
       on_mount: [{ForexCalendarWeb.UserAuth, :ensure_authenticated}] do
       live "/users/settings", UserSettingsLive, :edit
+      live "/users/settings/:server_id", UserServerSettingsLive, :edit
     end
   end
 

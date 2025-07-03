@@ -27,13 +27,18 @@ defmodule ForexCalendarWeb.UserSettingsLive do
         <div :if={!Enum.empty?(@servers)} class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div :for={server <- @servers} class="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow duration-200">
             <% server_guild = get_discord_guild(server) %>
-            <% dbg(server_guild) %>
             <div class="flex items-center justify-between mb-4">
               <div class="flex items-center space-x-3">
                 <h3 class="text-lg font-semibold text-gray-900">{server_guild.name}</h3>
               </div>
 
               <div class="flex space-x-2">
+                <.button
+                  class="!p-2 !rounded-full !bg-blue-500 hover:!bg-blue-600 !flex !items-center !justify-center"
+                  phx-click={JS.navigate(~p"/users/settings/#{server.id}")}
+                >
+                  <.icon name="hero-cog-6-tooth" class="h-4 w-4" />
+                </.button>
                 <.button
                   class="!p-2 !rounded-full !bg-red-500 hover:!bg-red-600 !flex !items-center !justify-center"
                   phx-click="delete_server"
