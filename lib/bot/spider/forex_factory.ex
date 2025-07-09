@@ -1,6 +1,7 @@
 defmodule Bot.Spider.ForexFactory do
   import ForexCalendar.Utils, only: [today_id: 0]
   @today_url "https://www.forexfactory.com/calendar?day=today"
+  # @today_url "https://www.forexfactory.com/calendar?day=jul3.2025"
   # @today_url "https://www.forexfactory.com/calendar?day=jun20.2025"
 
   def fetch_today do
@@ -72,7 +73,12 @@ defmodule Bot.Spider.ForexFactory do
         event_id: extract_event_id(row)
       }
 
-      event_response |> Map.put(:event_url, @today_url <> "#detail=#{event_response.event_id}")
+      event_url = if event_response.event_id do
+        @today_url <> "#detail=#{event_response.event_id}"
+      else
+        @today_url
+      end
+      event_response |> Map.put(:event_url, event_url)
     end
   end
 

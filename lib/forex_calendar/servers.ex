@@ -103,6 +103,19 @@ defmodule ForexCalendar.Servers do
   end
 
   @doc """
+  Returns the list of server settings that have announcement channels configured.
+
+  ## Examples
+
+      iex> get_servers_with_announcement_channels()
+      [%ServerSetting{}, ...]
+
+  """
+  def get_servers_with_announcement_channels do
+    Repo.all(from s in ServerSetting, where: not is_nil(s.announcement_channel_id))
+  end
+
+  @doc """
   Gets server settings for a server.
 
   ## Examples
