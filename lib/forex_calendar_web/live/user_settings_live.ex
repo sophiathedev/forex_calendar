@@ -25,7 +25,10 @@ defmodule ForexCalendarWeb.UserSettingsLive do
         </div>
 
         <div :if={!Enum.empty?(@servers)} class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div :for={server <- @servers} class="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow duration-200">
+          <div
+            :for={server <- @servers}
+            class="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow duration-200"
+          >
             <% server_guild = get_discord_guild(server) %>
             <div class="flex items-center justify-between mb-4">
               <div class="flex items-center space-x-3">
@@ -65,7 +68,11 @@ defmodule ForexCalendarWeb.UserSettingsLive do
         </div>
       </div>
 
-      <.modal id="add-server-modal" on_cancel={hide_modal("add-server-modal")} show={@show_add_server_modal}>
+      <.modal
+        id="add-server-modal"
+        on_cancel={hide_modal("add-server-modal")}
+        show={@show_add_server_modal}
+      >
         <div class="space-y-6">
           <div>
             <h2 class="text-lg font-semibold text-gray-900">Add New Server</h2>
@@ -91,7 +98,8 @@ defmodule ForexCalendarWeb.UserSettingsLive do
             </div>
           </.simple_form>
         </div>
-      </.modal> </div>
+      </.modal>
+    </div>
     """
   end
 
@@ -132,6 +140,7 @@ defmodule ForexCalendarWeb.UserSettingsLive do
     case Servers.create_server(server_params) do
       {:ok, _server} ->
         servers = Servers.list_servers(user.id)
+
         {:noreply,
          socket
          |> assign(:servers, servers)
@@ -151,6 +160,7 @@ defmodule ForexCalendarWeb.UserSettingsLive do
     case Servers.delete_server(server) do
       {:ok, _server} ->
         servers = Servers.list_servers(user.id)
+
         {:noreply,
          socket
          |> assign(:servers, servers)

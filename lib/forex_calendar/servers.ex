@@ -179,4 +179,21 @@ defmodule ForexCalendar.Servers do
   def change_server_settings(%ServerSetting{} = server_setting, attrs \\ %{}) do
     ServerSetting.changeset(server_setting, attrs)
   end
+
+  @doc """
+  Returns a list all announcement channel IDs from server settings.
+
+  ## Examples
+
+      iex> get_all_announcement_channel_ids()
+      [123456789012345678, 234567890123456789, ...]
+  """
+  def get_all_announcement_channel_ids do
+    Repo.all(
+      from s in ServerSetting,
+        where: not is_nil(s.announcement_channel_id),
+        select: s.announcement_channel_id
+    )
+    |> Enum.map(&String.to_integer/1)
+  end
 end

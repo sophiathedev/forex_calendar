@@ -19,7 +19,7 @@ defmodule Bot.Command.Today do
       |> Enum.chunk_every(15)
       |> Enum.map(&create_embed/1)
 
-    today_events = if Enum.empty?(today_events), do: [create_embed([])]
+    today_events = if Enum.empty?(today_events), do: [create_embed([])], else: today_events
 
     [embeds: today_events]
   end

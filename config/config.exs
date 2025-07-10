@@ -58,6 +58,12 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
+config :logger, :nostrum,
+  level: :info,
+  backends: [:console],
+  format: "$time $metadata[$level] $message\n",
+  metadata: [:request_id]
+
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
@@ -92,6 +98,17 @@ config :crawly,
   ]
 
 config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
+
+# Configure Quantum Scheduler
+config :forex_calendar, ForexCalendar.Scheduler,
+  timezone: "UTC",
+  jobs: [
+    {"0 17 * * *", {Bot.Tasks.ResetDaily, :perform, []}}
+    # Chạy vào 0h20 theo UTC+7 (17h20 UTC)
+    # Example jobs - bạn có thể thêm các job cụ thể sau
+    # {"* * * * *", {MyApp.Workers.Example, :run, []}},
+    # {"@daily", fn -> IO.puts("Daily task") end}
+  ]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

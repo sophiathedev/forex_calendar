@@ -25,6 +25,8 @@ defmodule ForexCalendar.Application do
       {Finch, name: ForexCalendar.Finch},
       # Start a worker by calling: ForexCalendar.Worker.start_link(arg)
       # {ForexCalendar.Worker, arg},
+      # Start the Quantum scheduler
+      ForexCalendar.Scheduler,
       # Start to serve requests, typically the last entry
       ForexCalendarWeb.Endpoint,
       {Cachex, :cache},

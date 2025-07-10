@@ -27,12 +27,17 @@ defmodule ForexCalendar.Servers.ServerSetting do
 
     if channel_id_params do
       channel_id = channel_id_params |> String.to_integer()
+
       case Nostrum.Api.Channel.get(channel_id) do
         {:ok, _discord_channel} ->
           changeset
 
         {:error, _reason} ->
-          changeset |> add_error(field, "Discord channel does not exist or is not accessible with this channel ID.")
+          changeset
+          |> add_error(
+            field,
+            "Discord channel does not exist or is not accessible with this channel ID."
+          )
       end
     else
       changeset

@@ -88,6 +88,7 @@ defmodule Mix.Tasks.CreateAdmin do
 
   defp confirm_user(user) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
+
     user
     |> Ecto.Changeset.change(confirmed_at: now)
     |> Repo.update!()

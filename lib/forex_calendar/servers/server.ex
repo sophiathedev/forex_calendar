@@ -30,12 +30,17 @@ defmodule ForexCalendar.Servers.Server do
 
     if guild_id_params do
       guild_id = guild_id_params |> String.to_integer()
+
       case Nostrum.Api.Guild.get(guild_id) do
         {:ok, _discord_server} ->
           changeset
 
         {:error, _reason} ->
-          changeset |> add_error(field, "Discord server does not exists or is not accessible with this guild ID.")
+          changeset
+          |> add_error(
+            field,
+            "Discord server does not exists or is not accessible with this guild ID."
+          )
       end
     else
       changeset

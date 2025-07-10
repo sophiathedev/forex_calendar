@@ -73,11 +73,13 @@ defmodule Bot.Spider.ForexFactory do
         event_id: extract_event_id(row)
       }
 
-      event_url = if event_response.event_id do
-        @today_url <> "#detail=#{event_response.event_id}"
-      else
-        @today_url
-      end
+      event_url =
+        if event_response.event_id do
+          @today_url <> "#detail=#{event_response.event_id}"
+        else
+          @today_url
+        end
+
       event_response |> Map.put(:event_url, event_url)
     end
   end
