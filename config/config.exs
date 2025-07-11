@@ -101,9 +101,9 @@ config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
 # Configure Quantum Scheduler
 config :forex_calendar, ForexCalendar.Scheduler,
-  timezone: "UTC",
+  timezone: "Asia/Ho_Chi_Minh",
   jobs: [
-    {"0 17 * * *", {Bot.Tasks.ResetDaily, :perform, []}}
+    {"1 0 * * *", {Bot.Tasks.ResetDaily, :perform, []}}
     # Chạy vào 0h20 theo UTC+7 (17h20 UTC)
     # Example jobs - bạn có thể thêm các job cụ thể sau
     # {"* * * * *", {MyApp.Workers.Example, :run, []}},
