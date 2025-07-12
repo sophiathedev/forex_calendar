@@ -4,6 +4,9 @@ defmodule Bot.Tasks.ResetDaily do
   import Nostrum.Struct.Embed
 
   alias ForexCalendar.Servers
+  alias Bot.Event
+
+  @task_threshold_minute 3
 
   def perform do
     :logger.info("Performing daily reset task")
@@ -16,7 +19,64 @@ defmodule Bot.Tasks.ResetDaily do
     announcement_channel_ids
     |> Enum.map(&bulk_delete_old_messages/1)
     |> Enum.map(&send_daily_event_announcement(&1, today_events))
+
+    # This does not effect performance because have cached
+    # parse_today_event()
+    # |> Enum.map(&Event.convert_time_24_hours/1)
+    # |> Enum.group_by(& &1.time_24_hours)
+    # |> Enum.each(&setting_scheduled_activity/1)
   end
+
+  # defp setting_scheduled_activity({event_time, events}) do
+  #   time_now = DateTime.now("Asia/Ho_Chi_Minh") |> elem(1)
+  #   time_hm = {time_now.hour, time_now.minute}
+
+  #   case compare_time_hm(event_time, time_hm) do
+  #     -1 ->
+  #       :ok
+
+  #     _ ->
+  #       {schedule_hour, schedule_minute} = get_next_threshold_minute(event_time)
+
+  #       {event_hour, event_minute} = event_time
+  #       total_minutes = event_minute + @task_threshold_minute
+  #       schedule_date = if event_hour + div(total_minutes, 60) >= 24 do
+  #         DateTime.to_date(time_now) |> Date.add(1)
+  #       else
+  #         DateTime.to_date(time_now)
+  #       end
+
+  #       date_str = Date.to_string(schedule_date) |> String.replace("-", "_")
+
+  #       next_job = %Quantum.Job{
+  #         schedule: "#{schedule_minute} #{schedule_hour} * * *",
+  #         task: {Bot.Tasks.UpdateRecentActivity, :perform, [events]},
+  #         name: :"next_activity_#{date_str}_#{schedule_hour}_#{schedule_minute}",
+  #         overlap: false,
+  #         run_strategy: Quantum.RunStrategy.All,
+  #         timezone: "Asia/Ho_Chi_Minh"
+  #       }
+
+  #       ForexCalendar.Scheduler.add_job(next_job)
+  #       :logger.info("Registered task #{next_job.name} at #{schedule_hour}:#{schedule_minute} on #{date_str}")
+  #   end
+  # end
+
+  # defp get_next_threshold_minute({hour, minute}) do
+  #   minute = minute + @task_threshold_minute
+  #   new_hour = hour + div(minute, 60)
+  #   {rem(new_hour, 24), rem(minute, 60)}
+  # end
+
+  # defp compare_time_hm({h1, m1}, {h2, m2}) do
+  #   cond do
+  #     h1 < h2 -> -1
+  #     h1 > h2 -> 1
+  #     m1 < m2 -> -1
+  #     m1 > m2 -> 1
+  #     true -> 0
+  #   end
+  # end
 
   defp bulk_delete_old_messages(channel_id) do
     {:ok, messages} = Nostrum.Api.Channel.messages(channel_id, 1000)
@@ -36,7 +96,9 @@ defmodule Bot.Tasks.ResetDaily do
 
   defp send_daily_event_announcement(channel_id, today_events) do
     Nostrum.Api.Message.create(channel_id, embeds: today_events)
-    Nostrum.Api.Message.create(channel_id, embeds: [create_recent_activity_event_embed()])
+    {:ok, %Nostrum.Struct.Message{id: message_id}} = Nostrum.Api.Message.create(channel_id, embeds: [create_recent_activity_event_embed()])
+
+    {:ok, true} = Cachex.put(:cache, "recent_activity:#{channel_id}", message_id)
 
     :logger.info("Sent daily event announcement to channel: #{channel_id}")
     channel_id

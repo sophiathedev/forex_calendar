@@ -55,13 +55,13 @@ config :tailwind,
 
 # Configures Elixir's Logger
 config :logger, :console,
-  format: "$time $metadata[$level] $message\n",
+  format: "$time $metadata[$level] $message",
   metadata: [:request_id]
 
 config :logger, :nostrum,
   level: :info,
   backends: [:console],
-  format: "$time $metadata[$level] $message\n",
+  format: "$time $metadata[$level] $message",
   metadata: [:request_id]
 
 # Use Jason for JSON parsing in Phoenix
@@ -103,7 +103,7 @@ config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 config :forex_calendar, ForexCalendar.Scheduler,
   timezone: "Asia/Ho_Chi_Minh",
   jobs: [
-    {"1 0 * * *", {Bot.Tasks.ResetDaily, :perform, []}}
+    {"*/1 * * * *", {Bot.Tasks.ResetDaily, :perform, []}}
     # Chạy vào 0h20 theo UTC+7 (17h20 UTC)
     # Example jobs - bạn có thể thêm các job cụ thể sau
     # {"* * * * *", {MyApp.Workers.Example, :run, []}},

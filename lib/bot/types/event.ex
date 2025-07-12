@@ -8,6 +8,41 @@ defmodule Bot.Event do
     :forecast,
     :previous,
     :event_id,
-    :event_url
+    :event_url,
+    :time_24_hours
   ]
+
+  def convert_time_24_hours(%__MODULE__{time: time} = event) do
+    case parse_time_string(time) do
+      {:ok, hour, minute} ->
+        %{event | time_24_hours: {hour, minute}}
+
+      :error ->
+        event
+    end
+  end
+
+  defp parse_time_string(time_string) when is_binary(time_string) do
+    regex = ~r/^(\d{1,2}):(\d{2})(am|pm)$/i
+
+    case Regex.run(regex, String.downcase(time_string)) do
+      [_full_match, hours_str, minutes_str, period] ->
+        hours = String.to_integer(hours_str)
+        minutes = String.to_integer(minutes_str)
+
+        converted_hours = convert_to_24h(hours, period)
+
+        {:ok, converted_hours, minutes}
+
+      nil ->
+        :error
+    end
+  end
+
+  defp parse_time_string(_), do: :error
+
+  defp convert_to_24h(hours, "am") when hours == 12, do: 0
+  defp convert_to_24h(hours, "am"), do: hours
+  defp convert_to_24h(hours, "pm") when hours == 12, do: 12
+  defp convert_to_24h(hours, "pm"), do: hours + 12
 end
