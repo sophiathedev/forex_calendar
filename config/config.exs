@@ -99,16 +99,11 @@ config :crawly,
 
 config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
-# Configure Quantum Scheduler
-config :forex_calendar, ForexCalendar.Scheduler,
-  timezone: "Asia/Ho_Chi_Minh",
-  jobs: [
-    {"*/1 * * * *", {Bot.Tasks.ResetDaily, :perform, []}}
-    # Chạy vào 0h20 theo UTC+7 (17h20 UTC)
-    # Example jobs - bạn có thể thêm các job cụ thể sau
-    # {"* * * * *", {MyApp.Workers.Example, :run, []}},
-    # {"@daily", fn -> IO.puts("Daily task") end}
-  ]
+config :forex_calendar, Oban,
+  engine: Oban.Engines.Basic,
+  notifier: Oban.Notifiers.Postgres,
+  queues: [default: 10],
+  repo: ForexCalendar.Repo
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

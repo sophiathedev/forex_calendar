@@ -3,7 +3,9 @@ defmodule Bot.Spider.ForexFactory do
   # @today_url "https://www.forexfactory.com/calendar?day=today"
   # @today_url "https://www.forexfactory.com/calendar?day=jul3.2025"
   # @today_url "https://www.forexfactory.com/calendar?day=jun20.2025"
-  @today_url "https://www.forexfactory.com/calendar?day=jul11.2025"
+  # @today_url "https://www.forexfactory.com/calendar?day=jul11.2025"
+  # @today_url "https://www.forexfactory.com/calendar?day=jun16.2025"
+  @today_url "https://www.forexfactory.com/calendar?day=jun18.2025"
 
   def fetch_today do
     @today_url |> Crawly.fetch()

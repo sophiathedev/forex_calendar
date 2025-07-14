@@ -20,13 +20,13 @@ defmodule ForexCalendar.Application do
       ForexCalendarWeb.Telemetry,
       ForexCalendar.Repo,
       {DNSCluster, query: Application.get_env(:forex_calendar, :dns_cluster_query) || :ignore},
+      {Oban, Application.fetch_env!(:forex_calendar, Oban)},
       {Phoenix.PubSub, name: ForexCalendar.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: ForexCalendar.Finch},
       # Start a worker by calling: ForexCalendar.Worker.start_link(arg)
       # {ForexCalendar.Worker, arg},
       # Start the Quantum scheduler
-      ForexCalendar.Scheduler,
       # Start to serve requests, typically the last entry
       ForexCalendarWeb.Endpoint,
       {Cachex, :cache},
