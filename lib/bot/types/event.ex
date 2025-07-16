@@ -1,4 +1,18 @@
 defmodule Bot.Event do
+  @derive {Jason.Encoder,
+           only: [
+             :time,
+             :currency,
+             :actual,
+             :event_name,
+             :impact,
+             :forecast,
+             :previous,
+             :event_id,
+             :event_url,
+             :time_24_hours
+           ]}
+
   defstruct [
     :time,
     :currency,

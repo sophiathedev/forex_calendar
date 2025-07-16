@@ -61,7 +61,8 @@ defmodule Bot.Command.Today do
       field_event =
         [
           "#{impact_emoji} #{event.impact} Impact ([Details](#{event.event_url}))",
-          "```Forecast: #{event.forecast}",
+          "```Actual: #{event.actual}",
+          "Forecast: #{event.forecast}",
           "Previous: #{event.previous}```"
         ]
         |> Enum.join("\n")

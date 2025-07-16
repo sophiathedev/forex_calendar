@@ -103,7 +103,17 @@ config :forex_calendar, Oban,
   engine: Oban.Engines.Basic,
   notifier: Oban.Notifiers.Postgres,
   queues: [default: 10],
-  repo: ForexCalendar.Repo
+  repo: ForexCalendar.Repo,
+  plugins: [
+    {
+      Oban.Plugins.Cron,
+      timezone: "Asia/Ho_Chi_Minh",
+      crontab: [
+        {"*/1 * * * *", Bot.Jobs.ResetDaily}
+        # {"13 18 * * *", Bot.Jobs.ResetDaily}
+      ]
+    }
+  ]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
