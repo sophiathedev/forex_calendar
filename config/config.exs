@@ -110,8 +110,8 @@ config :forex_calendar, Oban,
       Oban.Plugins.Cron,
       timezone: "Asia/Ho_Chi_Minh",
       crontab: [
-        {"*/1 * * * *", Bot.Jobs.ResetDaily}
-        # {"13 18 * * *", Bot.Jobs.ResetDaily}
+        # {"*/1 * * * *", Bot.Jobs.ResetDaily}
+        {"1 0 * * *", Bot.Jobs.ResetDaily}
       ]
     }
   ]
