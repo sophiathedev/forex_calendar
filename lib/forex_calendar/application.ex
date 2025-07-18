@@ -34,14 +34,16 @@ defmodule ForexCalendar.Application do
       {Nostrum.Bot, bot_opts}
     ]
 
+    # See https://hexdocs.pm/elixir/Supervisor.html
+    # for other strategies and supported options
+    opts = [strategy: :one_for_one, name: ForexCalendar.Supervisor]
+    result = Supervisor.start_link(children, opts)
+
     %{}
     |> Bot.Jobs.ResetDaily.new()
     |> Oban.insert()
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: ForexCalendar.Supervisor]
-    Supervisor.start_link(children, opts)
+    result
   end
 
   # Tell Phoenix to update the endpoint configuration
