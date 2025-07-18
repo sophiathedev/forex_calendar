@@ -97,6 +97,9 @@ config :crawly,
   pipelines: [
     {Crawly.Pipelines.WriteToFile, folder: "/tmp", extension: "jl"}
   ],
+  spiders: [
+    Bot.Spider.ForexFactory
+  ],
   start_http_api?: false,
   manager_operations_timeout: 30_000
 
