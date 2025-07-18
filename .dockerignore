@@ -1,0 +1,22 @@
+# Exclude development files
+.git
+.gitignore
+README.md
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Exclude build artifacts
+_build/
+deps/
+node_modules/
+
+# Exclude temporary files
+.elixir_ls/
+.vscode/
+*.tmp
+*.log
+
+# Exclude OS files
+.DS_Store
+Thumbs.db

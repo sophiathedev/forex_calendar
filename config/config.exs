@@ -56,7 +56,8 @@ config :tailwind,
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message",
-  metadata: [:request_id]
+  metadata: [:request_id],
+  level: :info
 
 config :logger, :nostrum,
   level: :info,
