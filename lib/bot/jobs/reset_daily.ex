@@ -38,19 +38,41 @@ defmodule Bot.Jobs.ResetDaily do
   defp bulk_delete_messages(channel_id) do
     {:ok, messages} = Nostrum.Api.Channel.messages(channel_id, 100)
 
-    messages = messages |> Enum.map(& &1.id)
+    message_ids = messages |> Enum.map(& &1.id)
 
-    case Nostrum.Api.Channel.bulk_delete_messages(channel_id, messages) do
+    case Nostrum.Api.Channel.bulk_delete_messages(channel_id, message_ids) do
       {:error, reason} ->
-        :logger.error(
-          "Failed to bulk delete old messages in channel #{channel_id}: #{inspect(reason)}"
+        :logger.warning(
+          "Bulk delete failed in channel #{channel_id}: #{inspect(reason)}. Falling back to individual deletion."
         )
 
-        channel_id
+        # Fallback: delete messages one by one
+        delete_messages_individually(channel_id, message_ids)
 
       _ ->
+        :logger.info("Successfully bulk deleted #{length(message_ids)} messages in channel #{channel_id}")
         channel_id
     end
+  end
+
+  defp delete_messages_individually(channel_id, message_ids) do
+    deleted_count =
+      message_ids
+      |> Enum.reduce(0, fn message_id, acc ->
+        case Nostrum.Api.Message.delete(channel_id, message_id) do
+          :ok ->
+            acc + 1
+
+          {:error, reason} ->
+            :logger.warning(
+              "Failed to delete message #{message_id} in channel #{channel_id}: #{inspect(reason)}"
+            )
+            acc
+        end
+      end)
+
+    :logger.info("Successfully deleted #{deleted_count}/#{length(message_ids)} messages individually in channel #{channel_id}")
+    channel_id
   end
 
   defp send_daily_event_announcement(channel_id) do

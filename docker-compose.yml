@@ -2,10 +2,10 @@ services:
   app:
     build: .
     ports:
-      - "4000:4000"
+      - "4000:80"
     environment:
       - MIX_ENV=dev
-      - DATABASE_URL=ecto://postgres:postgres@db:5432/forex_calendar_dev
+      - DATABASE_HOST=db
     volumes:
       - .:/app
       - /app/deps
@@ -18,7 +18,7 @@ services:
       - forex_calendar-networks
 
   db:
-    image: postgres:16-alpine
+    image: postgres:latest
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
