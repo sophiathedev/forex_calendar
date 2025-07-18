@@ -33,6 +33,7 @@ COPY priv ./priv
 WORKDIR /app
 
 # Compile the application
+RUN mix deps.compile
 RUN mix compile
 
 # Start the Phoenix server

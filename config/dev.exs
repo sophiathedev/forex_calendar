@@ -65,14 +65,22 @@ config :forex_calendar, ForexCalendarWeb.Endpoint,
 # Enable dev routes for dashboard and mailbox
 config :forex_calendar, dev_routes: true
 
-# Do not include metadata nor timestamps in development logs
-config :logger, :console, format: "[$date $time] [$level] $message\n", level: :info
+# Configure logger to write to file in development
+config :logger,
+  backends: [:console, {LoggerFileBackend, :file_log}],
+  level: :info
 
 config :logger, :console,
   metadata: [:shard, :guild, :channel],
   colors: [enabled: true],
   format: "[$date $time] [$level] [$metadata] $message\n",
   level: :info
+
+config :logger, :file_log,
+  path: "production.log",
+  level: :info,
+  format: "[$date $time] [$level] [$metadata] $message\n",
+  metadata: [:shard, :guild, :channel]
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.

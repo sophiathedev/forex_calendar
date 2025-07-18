@@ -68,6 +68,7 @@ defmodule ForexCalendar.MixProject do
       {:cachex, github: "whitfin/cachex", depth: 1},
       {:tzdata, "~> 1.1", override: true},
       {:oban, "~> 2.19"},
+      {:logger_file_backend, "~> 0.0.14"},
       {:igniter, "~> 0.5", only: [:dev]}
     ]
   end

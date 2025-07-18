@@ -1,0 +1,38 @@
+[2025-07-18 11:20:58.223] [error] [] `inotify-tools` is needed to run `file_system` for your system, check https://github.com/rvoicilas/inotify-tools/wiki for more information about how to install it. If it's already installed but not be found, appoint executable file with `config.exs` or `FILESYSTEM_FSINOTIFY_EXECUTABLE_FILE` env.
+[2025-07-18 11:20:58.226] [warning] [] Not able to start file_system worker, reason: {:error, :fs_inotify_bootstrap_error}
+[2025-07-18 11:20:58.226] [warning] [] Could not start Phoenix live-reload because we cannot listen to the file system.
+You don't need to worry! This is an optional feature used during development to
+refresh your browser when you save files and it does not affect production.
+
+[2025-07-18 11:20:58.278] [warning] [] ffmpeg was not found in your path. By default, Nostrum requires ffmpeg to use voice.
+If you don't intend to use voice with ffmpeg, configure :nostrum, :ffmpeg to nil or false to suppress all voice warnings.
+
+[2025-07-18 11:20:58.302] [info] [] No spiders found to auto-load: %MatchError{term: {:error, :enoent}}
+[2025-07-18 11:20:58.565] [info] [] Running ForexCalendarWeb.Endpoint with Bandit 1.7.0 at 0.0.0.0:80 (http)
+[2025-07-18 11:20:58.568] [info] [] Access ForexCalendarWeb.Endpoint at http://localhost
+[2025-07-18 11:20:59.838] [info] [shard=0 ] READY
+[2025-07-18 11:21:00.542] [info] [] Perform reset daily job
+[2025-07-18 11:21:00.976] [info] [] Registered command: ping
+[2025-07-18 11:21:00.976] [info] [] Registered command: today
+[2025-07-18 11:21:01.219] [warning] [] Bulk delete failed in channel 1383296973829836882: %Nostrum.Error.ApiError{status_code: 400, response: %{code: 50035, message: "Invalid Form Body", errors: %{messages: %{_errors: [%{code: "BASE_TYPE_BAD_LENGTH", message: "Must be between 2 and 100 in length."}]}}}}. Falling back to individual deletion.
+[2025-07-18 11:21:01.544] [info] [] tzdata release in place is from a file last modified Thu, 16 Jan 2025 17:10:51 GMT. Release file on server was last modified Sat, 22 Mar 2025 21:45:31 GMT.
+[2025-07-18 11:21:01.562] [info] [] Successfully deleted 1/1 messages individually in channel 1383296973829836882
+[2025-07-18 11:21:02.067] [info] [] Tzdata has updated the release from 2025a to 2025b
+[2025-07-18 11:21:02.173] [info] [] CONNECTED TO Phoenix.LiveView.Socket in 14µs
+  Transport: :longpoll
+  Serializer: Phoenix.Socket.V2.JSONSerializer
+  Parameters: %{"_csrf_token" => "CzsqJCkXYDwPMlgaF1sCGiIQFQYePSBsBwYEMZ8hVD5Es9GcVsWPZNWA", "_live_referer" => "undefined", "_mount_attempts" => "0", "_mounts" => "2", "_track_static" => %{"0" => "http://localhost:4000/assets/app.css", "1" => "http://localhost:4000/assets/app.js"}, "vsn" => "2.0.0"}
+[2025-07-18 11:21:03.152] [warning] [] Skipped scheduling for past time: 0:30
+[2025-07-18 11:21:03.153] [warning] [] Skipped scheduling for past time: 3:0
+[2025-07-18 11:21:03.153] [warning] [] Skipped scheduling for past time: 5:30
+[2025-07-18 11:21:03.153] [warning] [] Skipped scheduling for past time: 6:30
+[2025-07-18 11:21:03.153] [warning] [] Skipped scheduling for past time: 10:0
+[2025-07-18 11:21:03.153] [warning] [] Skipped scheduling for past time: 13:0
+[2025-07-18 11:21:03.153] [warning] [] Skipped scheduling for past time: 15:0
+[2025-07-18 11:21:03.153] [warning] [] Skipped scheduling for past time: 15:15
+[2025-07-18 11:21:03.175] [info] [] Scheduled job for activity at 19:30 with job ID: 161
+[2025-07-18 11:21:03.180] [info] [] Scheduled job for activity at 21:0 with job ID: 162
+[2025-07-18 11:21:03.180] [info] [] Performed reset daily
+[2025-07-18 11:21:06.849] [info] [] SIGTERM received - shutting down
+
+[2025-07-18 11:21:06.851] [info] [] DRAINING 1 of 1 total connection(s) for socket Phoenix.LiveView.Socket every 2000ms - round 1 of 1
