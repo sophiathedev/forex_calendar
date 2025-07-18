@@ -96,7 +96,9 @@ config :crawly,
   ],
   pipelines: [
     {Crawly.Pipelines.WriteToFile, folder: "/tmp", extension: "jl"}
-  ]
+  ],
+  start_http_api?: false,
+  manager_operations_timeout: 30_000
 
 config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
