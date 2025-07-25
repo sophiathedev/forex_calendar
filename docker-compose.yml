@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: forex_bot_dev
+    volumes:
+      - forex_bot_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - forex_bot-networks
+
+volumes:
+  forex_bot_data:
+  
+networks:
+  forex_bot-networks:
+    driver: bridge
