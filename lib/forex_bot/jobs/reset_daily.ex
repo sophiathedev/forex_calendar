@@ -46,7 +46,7 @@ defmodule ForexBot.Jobs.ResetDaily do
     case DateTime.compare(schedule_datetime, current_datetime_now) do
       :gt ->
         %{"timestamp" => timestamp}
-        |> ForexBot.Jobs.UpdateActivity.new()
+        |> ForexBot.Jobs.UpdateActivity.new(scheduled_at: schedule_datetime)
         |> Oban.insert()
         |> case do
           {:ok, _job} ->

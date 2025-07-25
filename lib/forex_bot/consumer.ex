@@ -6,7 +6,8 @@ defmodule ForexBot.Consumer do
     guild_id = Application.get_env(:forex_bot, :guild_id)
 
     slashs = [
-      Nosedrum.Storage.Dispatcher.add_command("today", ForexBot.Slash.Today, guild_id)
+      Nosedrum.Storage.Dispatcher.add_command("today", ForexBot.Slash.Today, guild_id),
+      Nosedrum.Storage.Dispatcher.add_command("announce", ForexBot.Slash.Announce, guild_id)
     ]
 
     slashs
@@ -20,6 +21,10 @@ defmodule ForexBot.Consumer do
 
   def handle_event({:INTERACTION_CREATE, interaction, _ws_state}) when interaction.type == 2 do
     Nosedrum.Storage.Dispatcher.handle_interaction(interaction)
+  end
+
+  def handle_event({:INTERACTION_CREATE, interaction, _ws_state}) when interaction.type == 3 do
+    ForexBot.InteractionHandler.handle_event(interaction.data.custom_id, interaction)
   end
 
   def handle_event(_), do: :ok
