@@ -53,7 +53,7 @@ defmodule ForexBot.Slash.Announce do
   defp response_no_jobs_found do
     embeds = %Nostrum.Struct.Embed{}
     |> put_title("Thông báo !")
-    |> put_description("Không tìm thấy tin nào được lên lịch trong ngày hôm nay.")
+    |> put_description("Không tìm thấy tin nào còn lại được lên lịch trong ngày hôm nay.")
     |> put_color(0xFF0000)
     |> put_footer("Powered by Elixir Nostrum.")
 

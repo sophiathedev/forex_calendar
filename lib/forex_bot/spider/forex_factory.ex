@@ -1,7 +1,6 @@
 defmodule ForexBot.Spider.ForexFactory do
   import ForexBot.Utils, only: [today_id: 0]
-  # @today_url "https://www.forexfactory.com/calendar?day=today"
-  @today_url "https://www.forexfactory.com/calendar?day=jul24.2025"
+  @today_url "https://www.forexfactory.com/calendar?day=today"
 
   def fetch_today do
     @today_url |> Crawly.fetch()

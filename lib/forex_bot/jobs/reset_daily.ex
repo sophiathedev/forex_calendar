@@ -14,13 +14,14 @@ defmodule ForexBot.Jobs.ResetDaily do
 
     today_events =
       parse_today_event()
-      # |> filter_important_events()
+      |> filter_important_events()
       |> Enum.chunk_every(15)
       |> Enum.map(&create_embed/1)
     today_events = if Enum.empty?(today_events), do: [create_embed([])], else: today_events
     Nostrum.Api.Message.create(announce_channel_id, embeds: today_events)
 
     parse_today_event()
+    |> filter_important_events()
     |> Enum.map(& &1.time)
     |> Enum.uniq()
     |> Enum.map(fn timestamp ->

@@ -4,6 +4,7 @@ defmodule ForexBot.Jobs.UpdateActivity do
   import ForexBot.Spider.ForexFactory
   import ForexBot.Utils
   import Nostrum.Struct.Embed
+  import ForexBot.Slash.Today, only: [filter_important_events: 1]
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"timestamp" => timestamp}}) do
@@ -16,9 +17,8 @@ defmodule ForexBot.Jobs.UpdateActivity do
 
     today_events =
       parse_today_event(false)
-      # |> filter_important_events()
+      |> filter_important_events()
       |> Enum.group_by(& &1.time)
-
 
     found_events = Map.get(today_events, timestamp, [])
     found_events =
