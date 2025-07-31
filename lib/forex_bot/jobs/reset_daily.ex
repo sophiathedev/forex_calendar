@@ -18,7 +18,8 @@ defmodule ForexBot.Jobs.ResetDaily do
       |> Enum.chunk_every(15)
       |> Enum.map(&create_embed/1)
     today_events = if Enum.empty?(today_events), do: [create_embed([])], else: today_events
-    Nostrum.Api.Message.create(announce_channel_id, embeds: today_events)
+    {:ok, %Nostrum.Struct.Message{id: reset_daily_msg_id}} = Nostrum.Api.Message.create(announce_channel_id, embeds: today_events)
+    Cachex.put(:cache, "reset_daily_message:#{announce_channel_id}", reset_daily_msg_id)
 
     parse_today_event()
     |> filter_important_events()

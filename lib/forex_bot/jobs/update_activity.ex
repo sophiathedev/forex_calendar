@@ -15,10 +15,13 @@ defmodule ForexBot.Jobs.UpdateActivity do
     {:ok, message_id} = Cachex.get(:cache, "activity_message:#{channel_id}")
     message_id |> delete_old_activity(channel_id)
 
-    today_events =
+    events =
       parse_today_event(false)
       |> filter_important_events()
-      |> Enum.group_by(& &1.time)
+
+    update_events_list(events, channel_id)
+
+    today_events = events |> Enum.group_by(& &1.time)
 
     found_events = Map.get(today_events, timestamp, [])
     found_events =
@@ -96,5 +99,12 @@ defmodule ForexBot.Jobs.UpdateActivity do
         true
       )
     end)
+  end
+
+  defp update_events_list(events, channel_id) do
+    {:ok, message_id} = Cachex.get(:cache, "reset_daily_message:#{channel_id}")
+
+    events = events |> Enum.chunk_every(15) |> Enum.map(&create_embed/1)
+    Nostrum.Api.Message.edit(channel_id, message_id, embeds: events)
   end
 end

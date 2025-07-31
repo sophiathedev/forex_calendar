@@ -23,7 +23,7 @@ defmodule ForexBot.InteractionHandler do
   end
 
   defp perform_job_immediately(job) do
-    Oban.cancel_job(job)
+    # Oban.cancel_job(job)
 
     job_module = String.to_existing_atom("Elixir." <> job.worker)
 
