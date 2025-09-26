@@ -24,6 +24,7 @@ defmodule ForexBot.Jobs.UpdateActivity do
     today_events = events |> Enum.group_by(& &1.time)
 
     found_events = Map.get(today_events, timestamp, [])
+
     found_events =
       found_events
       |> Enum.chunk_every(15)
@@ -35,7 +36,8 @@ defmodule ForexBot.Jobs.UpdateActivity do
   end
 
   defp create_new_activity_message(channel_id, embeds) do
-    {:ok, %Nostrum.Struct.Message{id: message_id}} = Nostrum.Api.Message.create(channel_id, embeds: embeds)
+    {:ok, %Nostrum.Struct.Message{id: message_id}} =
+      Nostrum.Api.Message.create(channel_id, embeds: embeds)
 
     Cachex.put(:cache, "activity_message:#{channel_id}", message_id)
 
@@ -43,6 +45,7 @@ defmodule ForexBot.Jobs.UpdateActivity do
   end
 
   defp delete_old_activity(nil, channel_id), do: channel_id
+
   defp delete_old_activity(message_id, channel_id) do
     Nostrum.Api.Message.delete(channel_id, message_id)
 

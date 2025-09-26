@@ -17,8 +17,12 @@ defmodule ForexBot.Jobs.ResetDaily do
       |> filter_important_events()
       |> Enum.chunk_every(15)
       |> Enum.map(&create_embed/1)
+
     today_events = if Enum.empty?(today_events), do: [create_embed([])], else: today_events
-    {:ok, %Nostrum.Struct.Message{id: reset_daily_msg_id}} = Nostrum.Api.Message.create(announce_channel_id, embeds: today_events)
+
+    {:ok, %Nostrum.Struct.Message{id: reset_daily_msg_id}} =
+      Nostrum.Api.Message.create(announce_channel_id, embeds: today_events)
+
     Cachex.put(:cache, "reset_daily_message:#{announce_channel_id}", reset_daily_msg_id)
 
     parse_today_event()
@@ -53,6 +57,7 @@ defmodule ForexBot.Jobs.ResetDaily do
         |> case do
           {:ok, _job} ->
             :logger.info("Scheduled job for timestamp #{timestamp} at #{schedule_datetime}")
+
           {:error, reason} ->
             :logger.error("Failed to schedule job for timestamp #{timestamp}: #{inspect(reason)}")
         end
@@ -70,11 +75,13 @@ defmodule ForexBot.Jobs.ResetDaily do
   end
 
   defp delete_messages(channel_id, []), do: channel_id
+
   defp delete_messages(channel_id, message_id) when length(message_id) == 1 do
     Nostrum.Api.Message.delete(channel_id, hd(message_id))
 
     channel_id
   end
+
   defp delete_messages(channel_id, message_ids) do
     Nostrum.Api.Channel.bulk_delete_messages(channel_id, message_ids)
 

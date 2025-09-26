@@ -7,7 +7,8 @@ defmodule ForexBot.Consumer do
 
     slashs = [
       Nosedrum.Storage.Dispatcher.add_command("today", ForexBot.Slash.Today, guild_id),
-      Nosedrum.Storage.Dispatcher.add_command("announce", ForexBot.Slash.Announce, guild_id)
+      Nosedrum.Storage.Dispatcher.add_command("announce", ForexBot.Slash.Announce, guild_id),
+      Nosedrum.Storage.Dispatcher.add_command("cpi", ForexBot.Slash.Cpi, guild_id)
     ]
 
     slashs

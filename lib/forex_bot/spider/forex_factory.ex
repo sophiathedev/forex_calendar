@@ -2,8 +2,29 @@ defmodule ForexBot.Spider.ForexFactory do
   import ForexBot.Utils, only: [today_id: 0]
   @today_url "https://www.forexfactory.com/calendar?day=today"
 
-  def fetch_today do
-    @today_url |> Crawly.fetch()
+  def fetch_today(url \\ @today_url) do
+    url |> Crawly.fetch()
+  end
+
+  def parse_cpi(url) do
+    %HTTPoison.Response{body: crawled_body} = fetch_today(url)
+
+    parse_item(crawled_body)
+    |> fill_missing_times()
+    |> Enum.map(fn crawled_event ->
+      struct(ForexBot.Types.Event, crawled_event)
+    end)
+    |> Enum.map_reduce(nil, fn event, extracted_date ->
+      extracted_date =
+        if event.date != nil and event.date != "" do
+          event.date |> String.slice(4..9)
+        else
+          extracted_date
+        end
+
+      {%ForexBot.Types.Event{event | date: extracted_date}, extracted_date}
+    end)
+    |> elem(0)
   end
 
   def parse_today_event(cache \\ true) do
@@ -62,6 +83,7 @@ defmodule ForexBot.Spider.ForexFactory do
     if length(tds) >= 8 do
       event_response = %{
         time: extract_time(tds),
+        date: extract_date(tds),
         currency: extract_currency(tds),
         impact: extract_impact(tds),
         event_name: extract_event_name(tds),
@@ -84,6 +106,10 @@ defmodule ForexBot.Spider.ForexFactory do
 
   defp extract_time(tds) do
     tds |> Floki.find("td.calendar__time") |> Floki.text() |> String.trim()
+  end
+
+  defp extract_date(tds) do
+    tds |> Floki.find("td.calendar__date") |> Floki.text() |> String.trim()
   end
 
   defp extract_currency(tds) do

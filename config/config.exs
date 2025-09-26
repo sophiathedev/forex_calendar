@@ -125,7 +125,8 @@ config :forex_bot, Oban,
       Oban.Plugins.Cron,
       timezone: "Asia/Ho_Chi_Minh",
       crontab: [
-        {"1 0 * * *", ForexBot.Jobs.ResetDaily}
+        {"1 0 * * *", ForexBot.Jobs.ResetDaily},
+        {"1 0 1 * *", ForexBot.Jobs.Cpi}
       ]
     }
   ]

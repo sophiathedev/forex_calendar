@@ -2,6 +2,7 @@ defmodule ForexBot.Types.Event do
   @derive {Jason.Encoder,
            only: [
              :time,
+             :date,
              :currency,
              :actual,
              :event_name,
@@ -15,6 +16,7 @@ defmodule ForexBot.Types.Event do
 
   defstruct [
     :time,
+    :date,
     :currency,
     :actual,
     :event_name,
@@ -29,7 +31,7 @@ defmodule ForexBot.Types.Event do
   def convert_time_24_hours(time) do
     case parse_time_string(time) do
       {:ok, hour, minute} ->
-       {hour, minute}
+        {hour, minute}
 
       :error ->
         {-1, -1}

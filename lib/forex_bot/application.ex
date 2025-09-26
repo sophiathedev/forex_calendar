@@ -38,7 +38,8 @@ defmodule ForexBot.Application do
     opts = [strategy: :one_for_one, name: ForexBot.Supervisor]
     result = Supervisor.start_link(children, opts)
 
-    %{} |> ForexBot.Jobs.ResetDaily.new() |> Oban.insert()
+    ForexBot.Jobs.ResetDaily.new(%{}) |> Oban.insert()
+    ForexBot.Jobs.Cpi.new(%{}) |> Oban.insert()
 
     result
   end
