@@ -58,7 +58,7 @@ defmodule ForexBot.Slash.Cpi do
         Cachex.put(:cache, "cpi_interaction:#{interaction.id}", %{
           data: cpi_data_embed,
           current_page: 0
-        })
+        }, expire: :timer.hours(3))
 
       [first_pagination_embed | _] = cpi_data_embed
 
