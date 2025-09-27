@@ -69,22 +69,22 @@ defmodule ForexBot.Jobs.Cpi do
       "CPI y/y",
       "Core PPI m/m",
       "PPI m/m",
-      "Unemployment Claims",
       "Core Retail Sales m/m",
+      "Retail Sales m/m",
       "Prelim UoM Consumer Sentiment",
       "Prelim UoM Inflation Expectations",
-      "ECB Press Conference",
       "ADP Non-Farm Employment Change",
-      "ISM Manufacturing PMI",
-      "Average Hourly Earnings m/m",
       "Non-Farm Employment Change",
+      "Unemployment Claims",
       "Unemployment Rate",
+      "ISM Manufacturing PMI",
       "ISM Services PMI",
-      "Retail Sales m/m",
-      "Federal Funds Rate",
       "FOMC Economic Projections",
       "FOMC Statement",
-      "FOMC Press Conference"
+      "FOMC Press Conference",
+      "Average Hourly Earnings m/m",
+      "Federal Funds Rate",
+      "ECB Press Conference"
     ]
 
     Enum.filter(events, fn event ->

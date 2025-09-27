@@ -1,5 +1,4 @@
-defmodule ForexBot.Slash.Cpi do
-  import ForexBot.Spider.ForexFactory, only: [parse_cpi: 1]
+defmodule ForexBot.Slash.Data do
   import ForexBot.Utils, only: [localtime_now: 0]
   import Nostrum.Struct.Embed
   import Nostrum.Struct.Component.Button, only: [interaction_button: 3]
@@ -9,8 +8,25 @@ defmodule ForexBot.Slash.Cpi do
 
   @behaviour Nosedrum.ApplicationCommand
 
+  @allowed_event_names %{
+    "cpi" => ["Core CPI m/m", "Core CPI y/y", "CPI m/m", "CPI y/y"],
+    "ppi" => ["Core PPI m/m", "Core PPI y/y", "PPI m/m", "PPI y/y"],
+    "retail" => [
+      "Core Retail Sales m/m",
+      "Core Retail Sales y/y",
+      "Retail Sales m/m",
+      "Retail Sales y/y"
+    ],
+    "prelim" => ["Prelim UoM Consumer Sentiment", "Prelim UoM Inflation Expectations"],
+    "nonfarm" => ["ADP Non-Farm Employment Change", "Non-Farm Employment Change"],
+    "unemployment" => ["Unemployment Claims", "Unemployment Rate"],
+    "ism" => ["ISM Manufacturing PMI", "ISM Services PMI"],
+    "fomc" => ["FOMC Economic Projections", "FOMC Statement", "FOMC Press Conference"],
+    "other" => ["Average Hourly Earnings m/m", "Federal Funds Rate", "ECB Press Conference"]
+  }
+
   @impl true
-  def description, do: "Lấy dữ liệu CPI trong 6 tháng gần nhất"
+  def description, do: "Lấy dữ liệu từ 1 đến 6 tháng gần nhất"
 
   @impl true
   def type, do: :slash
@@ -23,6 +39,10 @@ defmodule ForexBot.Slash.Cpi do
       %ApplicationCommandInteractionDataOption{
         name: "month",
         value: month_to_cpi
+      },
+      %ApplicationCommandInteractionDataOption{
+        name: "type",
+        value: type_to_get_data
       }
     ] = interaction.data.options
 
@@ -51,25 +71,34 @@ defmodule ForexBot.Slash.Cpi do
           (compare_time_begin == :gt or compare_time_begin == :eq) and
             (compare_time_end == :lt or compare_time_end == :eq)
         end)
-        |> Enum.chunk_every(8)
+        |> filter_events(type_to_get_data)
+        |> Enum.chunk_every(9)
         |> Enum.map(&create_embed/1)
 
       {:ok, _} =
-        Cachex.put(:cache, "cpi_interaction:#{interaction.id}", %{
-          data: cpi_data_embed,
-          current_page: 0
-        }, expire: :timer.hours(3))
+        Cachex.put(
+          :cache,
+          "cpi_interaction:#{interaction.id}",
+          %{
+            data: cpi_data_embed,
+            current_page: 0
+          },
+          expire: :timer.hours(3)
+        )
 
       [first_pagination_embed | _] = cpi_data_embed
 
-      first_page_button = interaction_button("<<", "first_prev", style: 3)
-      prev_page_button = interaction_button("<", "prev_page", style: 3)
+      first_page_button = interaction_button("<<", "first_prev", style: 3, disabled: true)
+      prev_page_button = interaction_button("<", "prev_page", style: 3, disabled: true)
 
       pagination_info_button =
         interaction_button("1 / #{length(cpi_data_embed)}", "page_info", style: 2, disabled: true)
 
-      next_page_button = interaction_button(">", "next_page", style: 3)
-      last_page_button = interaction_button(">>", "last_next", style: 3)
+      next_page_button =
+        interaction_button(">", "next_page", style: 3, disabled: length(cpi_data_embed) == 1)
+
+      last_page_button =
+        interaction_button(">>", "last_next", style: 3, disabled: length(cpi_data_embed) == 1)
 
       action_row =
         action_row([
@@ -130,7 +159,7 @@ defmodule ForexBot.Slash.Cpi do
       |> put_field(
         "`#{date} #{event.time}` #{currency_emoji} #{event.currency} - #{event.event_name}",
         field_event,
-        false
+        true
       )
     end)
   end
@@ -140,10 +169,25 @@ defmodule ForexBot.Slash.Cpi do
     [
       %{
         name: "month",
-        description: "Các tháng để lấy CPI trở về trước",
+        description: "Các tháng để lấy dữ liệu trở về trước",
         required: true,
         type: :number
+      },
+      %{
+        name: "type",
+        description: "Loại dữ liệu",
+        required: true,
+        type: :string
       }
     ]
+  end
+
+  defp filter_events([], _), do: []
+
+  defp filter_events(events, type_to_get_data) do
+    events
+    |> Enum.filter(fn event ->
+      event.event_name in Map.get(@allowed_event_names, type_to_get_data, [])
+    end)
   end
 end
