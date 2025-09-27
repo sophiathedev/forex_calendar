@@ -84,7 +84,6 @@ defmodule ForexBot.InteractionHandler do
   end
 
   defp create_pagination_response(interaction, embeds, page_number) do
-    dbg(page_number)
     paginated_embed = embeds |> Enum.at(page_number)
 
     left_pagination_disabled = page_number == 0

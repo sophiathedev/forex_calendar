@@ -43,13 +43,20 @@ defmodule ForexBot.Slash.Data do
       %ApplicationCommandInteractionDataOption{
         name: "type",
         value: type_to_get_data
+      },
+      %ApplicationCommandInteractionDataOption{
+        name: "currency",
+        value: currency_to_get_data
       }
     ] = interaction.data.options
 
-    if trunc(month_to_cpi) < 1 or trunc(month_to_cpi) > 6 do
+    type_to_get_data = String.downcase(type_to_get_data)
+    currency_to_get_data = String.upcase(currency_to_get_data)
+
+    if trunc(month_to_cpi) < 1 or trunc(month_to_cpi) > 12 do
       error_embed =
         %Nostrum.Struct.Embed{}
-        |> put_description("CPI chỉ hỗ trợ thời gian từ 1 đến 6 tháng gần nhất")
+        |> put_description("CPI chỉ hỗ trợ thời gian từ 1 đến 12 tháng gần nhất")
         |> put_color(0xEB4034)
 
       [embeds: [error_embed], ephemeral?: true]
@@ -71,7 +78,7 @@ defmodule ForexBot.Slash.Data do
           (compare_time_begin == :gt or compare_time_begin == :eq) and
             (compare_time_end == :lt or compare_time_end == :eq)
         end)
-        |> filter_events(type_to_get_data)
+        |> filter_events(type_to_get_data, currency_to_get_data)
         |> Enum.chunk_every(9)
         |> Enum.map(&create_embed/1)
 
@@ -83,34 +90,51 @@ defmodule ForexBot.Slash.Data do
             data: cpi_data_embed,
             current_page: 0
           },
-          expire: :timer.hours(3)
+          expire: :timer.minutes(30)
         )
 
-      [first_pagination_embed | _] = cpi_data_embed
+      if cpi_data_embed != [] do
+        [first_pagination_embed | _] = cpi_data_embed
 
-      first_page_button = interaction_button("<<", "first_prev", style: 3, disabled: true)
-      prev_page_button = interaction_button("<", "prev_page", style: 3, disabled: true)
+        first_page_button = interaction_button("<<", "first_prev", style: 3, disabled: true)
+        prev_page_button = interaction_button("<", "prev_page", style: 3, disabled: true)
 
-      pagination_info_button =
-        interaction_button("1 / #{length(cpi_data_embed)}", "page_info", style: 2, disabled: true)
+        pagination_info_button =
+          interaction_button("1 / #{length(cpi_data_embed)}", "page_info", style: 2, disabled: true)
 
-      next_page_button =
-        interaction_button(">", "next_page", style: 3, disabled: length(cpi_data_embed) == 1)
+        next_page_button =
+          interaction_button(">", "next_page", style: 3, disabled: length(cpi_data_embed) == 1)
 
-      last_page_button =
-        interaction_button(">>", "last_next", style: 3, disabled: length(cpi_data_embed) == 1)
+        last_page_button =
+          interaction_button(">>", "last_next", style: 3, disabled: length(cpi_data_embed) == 1)
 
-      action_row =
-        action_row([
-          first_page_button,
-          prev_page_button,
-          pagination_info_button,
-          next_page_button,
-          last_page_button
-        ])
+        action_row =
+          action_row([
+            first_page_button,
+            prev_page_button,
+            pagination_info_button,
+            next_page_button,
+            last_page_button
+          ])
 
-      [embeds: [first_pagination_embed], components: [action_row]]
+        [embeds: [first_pagination_embed], components: [action_row]]
+      else
+        response_embed =
+          %Nostrum.Struct.Embed{}
+          |> put_title("Forex CPI Data")
+          |> put_color(0x4285F4)
+          |> put_description("Không có data.")
+
+        [embeds: [response_embed], ephemeral?: true]
+      end
     end
+  end
+
+  defp create_embed([]) do
+    %Nostrum.Struct.Embed{}
+    |> put_title("Forex Data")
+    |> put_color(0x4285F4)
+    |> put_description("Không có data.")
   end
 
   defp create_embed(events) do
@@ -121,7 +145,7 @@ defmodule ForexBot.Slash.Data do
   end
 
   defp put_events(embed, []) do
-    embed |> put_description("Không có CPI data")
+    embed |> put_description("Không có data.")
   end
 
   defp put_events(embed, events) do
@@ -178,16 +202,25 @@ defmodule ForexBot.Slash.Data do
         description: "Loại dữ liệu",
         required: true,
         type: :string
+      },
+      %{
+        name: "currency",
+        description: "Loại tiền tệ",
+        required: true,
+        type: :string
       }
     ]
   end
 
-  defp filter_events([], _), do: []
+  defp filter_events([], _, _), do: []
 
-  defp filter_events(events, type_to_get_data) do
+  defp filter_events(events, type_to_get_data, currency_to_get_data) do
     events
     |> Enum.filter(fn event ->
       event.event_name in Map.get(@allowed_event_names, type_to_get_data, [])
+    end)
+    |> Enum.filter(fn event ->
+      event.currency == currency_to_get_data
     end)
   end
 end

@@ -31,7 +31,7 @@ defmodule ForexBot.Jobs.Cpi do
     current_year = localtime_now().year
 
     crawled_result =
-      (current_month - 6)..current_month
+      (current_month - 12)..current_month
       |> Enum.to_list()
       |> Enum.map(fn m ->
         {
@@ -55,6 +55,8 @@ defmodule ForexBot.Jobs.Cpi do
       |> filter_important_events()
 
     Cachex.put(:cache, "cpi_data", crawled_result)
+
+    :logger.info("Crawled for 12 month data")
 
     :ok
   end
