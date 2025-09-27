@@ -14,7 +14,7 @@ defmodule ForexBot.Slash.Help do
     help_embed = %Nostrum.Struct.Embed{}
     |> put_title("Hướng dẫn sử dụng bot")
     |> put_field("`/data month:<1-6> type:<type>`", "Lấy dữ liệu kinh tế trong vòng 1 đến 6 tháng gần nhất.", false)
-    |> put_field("Ví dụ", "```/data month:3 type:cpi\n/data month:2 type:prelim\n/data month:6 type:unemployment\n/data month:4 type:other```", false)
+    |> put_field("Ví dụ", "```/data month:3 type:cpi currency:usd\n/data month:2 type:prelim currency:usd\n/data month:6 type:unemployment currency:usd\n/data month:4 type:other currency:usd```", false)
     |> put_color(0x32A852)
 
     params_help_embed = %Nostrum.Struct.Embed{}
