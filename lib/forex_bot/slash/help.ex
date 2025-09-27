@@ -28,7 +28,16 @@ defmodule ForexBot.Slash.Help do
     |> put_field("`ism`", "Chỉ số quản lý thu mua (ISM)", true)
     |> put_field("`fomc`", "Dữ liệu từ cuộc họp", true)
     |> put_field("`other`", "Dữ liệu khác, bao gồm:\n+ Average Hourly Earnings m/m\n+ Federal Funds Rate\n+ ECB Press Conference", true)
+    |> put_color(0x32A852)
 
-    [embeds: [help_embed, params_help_embed], ephemeral?: true]
+    currency_param_help_embed = %Nostrum.Struct.Embed{}
+    |> put_title("Tham số `currency`")
+    |> put_field("`USD`", "Hiển thị các tin của Dollar Mỹ :flag_us:", false)
+    |> put_field("`EUR`", "Hiển thị các tin của Euro :flag_eu:", false)
+    |> put_field("`GBP`", "Hiển thị các tin của Bảng Anh :flag_gb:", true)
+    |> put_field("`JPY`", "Hiển thị các tin của Yen Nhật :flag_jp:", false)
+    |> put_color(0x32A852)
+
+    [embeds: [help_embed, params_help_embed, currency_param_help_embed], ephemeral?: true]
   end
 end
