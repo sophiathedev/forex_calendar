@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: forex_bot_dev
     volumes:
-      - forex_bot_data:/var/lib/postgresql/data
+      - forex_bot_data:/var/lib/postgresql
     ports:
       - "5432:5432"
     networks:
