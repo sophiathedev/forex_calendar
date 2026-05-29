@@ -53,39 +53,91 @@ type flareResponse struct {
 	} `json:"solution"`
 }
 
+// postRetries là số lần thử lại cho lỗi mạng tạm thời (vd FlareSolverr đang
+// khởi động/restart → connection refused).
+const postRetries = 3
+
+// post gọi /v1 với retry cho lỗi tạm thời. Lỗi cấp ứng dụng (FlareSolverr trả
+// status "error") không retry vì thử lại ngay cũng không giúp.
 func (f *FlareSolverr) post(ctx context.Context, body flareRequest) (*flareResponse, error) {
+	var lastErr error
+	for attempt := 1; attempt <= postRetries; attempt++ {
+		out, transient, err := f.postOnce(ctx, body)
+		if err == nil {
+			return out, nil
+		}
+		lastErr = err
+		if !transient {
+			return nil, err
+		}
+		// backoff tuyến tính: 2s, 4s, ...
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(time.Duration(attempt) * 2 * time.Second):
+		}
+	}
+	return nil, lastErr
+}
+
+// postOnce thực hiện một request. transient=true nghĩa là lỗi mạng/server tạm
+// thời, nên thử lại.
+func (f *FlareSolverr) postOnce(ctx context.Context, body flareRequest) (resp *flareResponse, transient bool, err error) {
 	buf, err := json.Marshal(body)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, f.baseURL+"/v1", bytes.NewReader(buf))
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := f.http.Do(req)
+	httpResp, err := f.http.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("gọi FlareSolverr lỗi: %w", err)
+		return nil, true, fmt.Errorf("gọi FlareSolverr lỗi: %w", err) // lỗi mạng -> thử lại
 	}
-	defer resp.Body.Close()
+	defer httpResp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
+	data, err := io.ReadAll(httpResp.Body)
 	if err != nil {
-		return nil, err
+		return nil, true, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("FlareSolverr trả HTTP %d: %s", resp.StatusCode, truncate(string(data), 200))
+	if httpResp.StatusCode != http.StatusOK {
+		// 5xx/khác từ chính server FlareSolverr -> coi là tạm thời.
+		return nil, httpResp.StatusCode >= 500, fmt.Errorf("FlareSolverr trả HTTP %d: %s", httpResp.StatusCode, truncate(string(data), 200))
 	}
 
 	var out flareResponse
 	if err := json.Unmarshal(data, &out); err != nil {
-		return nil, fmt.Errorf("không parse được phản hồi FlareSolverr: %w", err)
+		return nil, false, fmt.Errorf("không parse được phản hồi FlareSolverr: %w", err)
 	}
 	if out.Status != "ok" {
-		return nil, fmt.Errorf("FlareSolverr báo lỗi: %s", out.Message)
+		return nil, false, fmt.Errorf("FlareSolverr báo lỗi: %s", out.Message)
 	}
-	return &out, nil
+	return &out, false, nil
+}
+
+// WaitReady chờ FlareSolverr phản hồi HTTP (đã sẵn sàng) hoặc tới khi ctx hết hạn.
+// Dùng lúc khởi động để tránh race với việc FlareSolverr còn đang boot Chromium.
+func (f *FlareSolverr) WaitReady(ctx context.Context) error {
+	ticker := time.NewTicker(2 * time.Second)
+	defer ticker.Stop()
+	for {
+		probeCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+		req, _ := http.NewRequestWithContext(probeCtx, http.MethodGet, f.baseURL+"/", nil)
+		resp, err := f.http.Do(req)
+		cancel()
+		if err == nil {
+			resp.Body.Close()
+			return nil
+		}
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("FlareSolverr chưa sẵn sàng: %w", ctx.Err())
+		case <-ticker.C:
+		}
+	}
 }
 
 // CreateSession tạo một session để tái dùng cho các request sau.

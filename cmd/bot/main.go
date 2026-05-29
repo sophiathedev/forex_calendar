@@ -28,9 +28,17 @@ func main() {
 
 	c := cache.New()
 
-	// FlareSolverr: tạo session để tái dùng (giải Cloudflare). Lỗi không fatal —
-	// các request sau vẫn chạy được dạng không session.
+	// FlareSolverr: chờ service sẵn sàng (tránh race lúc compose vừa khởi động,
+	// FlareSolverr còn đang boot Chromium), rồi tạo session để tái dùng.
 	flare := scraper.NewFlareSolverr(cfg.FlareSolverrURL)
+	readyCtx, readyCancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	if err := flare.WaitReady(readyCtx); err != nil {
+		log.Printf("Chờ FlareSolverr không thành công (vẫn tiếp tục, job sẽ tự thử lại): %v", err)
+	} else {
+		log.Println("FlareSolverr đã sẵn sàng")
+	}
+	readyCancel()
+
 	sessCtx, sessCancel := context.WithTimeout(context.Background(), 90*time.Second)
 	if err := flare.CreateSession(sessCtx); err != nil {
 		log.Printf("Không tạo được session FlareSolverr (vẫn tiếp tục): %v", err)
