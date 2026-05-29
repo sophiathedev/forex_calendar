@@ -8,6 +8,10 @@ services:
     ports:
       - "8191:8191"
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
   bot:
     build: .
